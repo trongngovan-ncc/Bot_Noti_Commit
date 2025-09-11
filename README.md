@@ -1,10 +1,4 @@
 
-## This bot is written based on new SDK (additional functions, playMedia API)
-
-### Some ping bot ex:
-#### *intro
-#### *playmusic <url.mp3>
-
 ## Create your Mezon application
 
 Visit the [Developers Portal](https://dev-developers.nccsoft.vn/) to create your application.
