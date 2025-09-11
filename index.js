@@ -1,43 +1,60 @@
+// server.js
+require('dotenv').config();
+const crypto = require('crypto');
+const express = require('express');
+const bodyParser = require('body-parser');
 
-const dotenv = require("dotenv");
-const { MezonClient } = require("mezon-sdk");
-const express = require("express");
-const bodyParser = require("body-parser");
-dotenv.config();
+const { MezonClient } = require('mezon-sdk'); 
+const handleNotificationGit = require('./commands/noti_git');
 
-const handleIntro = require("./commands/intro");
-const handleNotification = require("./commands/noti_commit");
+/**
+ * CONFIG
+ */
+const PORT = process.env.PORT;
+const APP_TOKEN = process.env.APPLICATION_TOKEN;
 
-async function main() {
-  const client = new MezonClient(process.env.APPLICATION_TOKEN);
-  // const client = new MezonClient(process.env.MEZON_TOKEN, process.env.HOST_DEV, process.env.PORT_DEV);
-  await client.login();
 
+/**
+ * Main
+ */
+(async () => {
+  if (!APP_TOKEN) {
+    console.error('APPLICATION_TOKEN not set. Exiting.');
+    process.exit(1);
+  }
+
+  await initIdempotency();
+
+  const client = new MezonClient(APP_TOKEN);
+  try {
+    await client.login();
+    console.log('✅ Mezon client logged in');
+  } catch (e) {
+    console.error('❌ Mezon client login failed:', e);
+  }
 
   const app = express();
+
+  // /review endpoint
   app.use(bodyParser.json());
-
-  app.post("/review", async (req, res) => {
-    const  diff = req.body.diff;
-    if (!diff) return res.status(400).json({ error: "Missing diff" });
+  app.post('/review', async (req, res) => {
+    const { diff, channelId } = req.body;
+    if (!diff || !channelId) {
+      return res.status(400).json({ error: 'Missing diff or channelId' });
+    }
     try {
-      console.log("Received diff:", diff);
-      res.json({ message: "Diff sent to Mezon channel!" });
-      handleNotification(client,  diff );
-
+      await handleNotificationGit(client, diff, channelId);
+      res.json({ message: 'Diff sent to Mezon channel!' });
     } catch (err) {
-      console.error(err);
+      console.error('Error in /review:', err);
       res.status(500).json({ error: err.message });
     }
   });
 
-  const PORT = process.env.PORT || 8000;
+  
+
   app.listen(PORT, () => {
-    console.log(`Review server listening on port ${PORT}`);
+    console.log(`🚀 Server listening on port ${PORT}`);
+    console.log(`🔗 GitHub webhook endpoint: POST /github/webhook`);
   });
-
-}
-
-main()
-  .then(() => console.log("Bot is running"))
-  .catch(console.error);
+})();
