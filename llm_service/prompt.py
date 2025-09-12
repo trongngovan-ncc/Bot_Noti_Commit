@@ -15,6 +15,6 @@ Hãy review Git diff dưới đây và cung cấp phản hồi.
     * Trình bày dưới dạng danh sách gạch đầu dòng.
     * Bắt đầu mỗi gạch đầu dòng bằng biểu tượng tương ứng với đánh giá của bạn (✅, ➖, ❌).
     * Chỉ nêu những điểm chính. Không cần đi quá sâu vào các chi tiết không cần thiết.
-
+4.  **Chỉ phản hồi bằng TIẾNG VIỆT**
 **Git Diff cần review:**
 '''
