@@ -115,6 +115,13 @@ function formatMessage(event, payload) {
       }
       return `🔀 PR ${action} by ${actor}: ${pr.title} (PR #${pr.number})\n${pr.html_url}`;
     }
+    case 'issues': {
+      const action = payload.action;
+      const issue = payload.issue || {};
+      const repo = payload.repository?.full_name || 'unknown';
+      const actor = payload.sender?.login || 'unknown';
+      return `🐛 Issue ${action} by ${actor} in ${repo}:\n#${issue.number} ${issue.title}\n${issue.html_url}`;
+    }
     case 'issue_comment': {
       const sender = payload.sender?.login || 'unknown';
       const body = payload.comment?.body || '';
