@@ -27,7 +27,11 @@ module.exports = async function handleNotificationGit(client, result, channelId)
       message = JSON.stringify(reviewResult);
     }
 
-    await channel.send({ t: message });
+    await channel.send({ t: message ,
+      mk: [
+          { type: 'pre', s: 0 , e: message.length }
+      ]
+    });
   } catch (err) {
     console.error(err);
   }
