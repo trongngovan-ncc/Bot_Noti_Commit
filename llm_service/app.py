@@ -34,7 +34,7 @@ Diff:
         start_time = time.time()
         with requests.post(
             "http://localhost:11434/api/generate",
-            json={"model": "gemma3:4b-it-qat", "prompt": prompt},
+            json={"model": "gemma3:12b-it-qat", "prompt": prompt},
             stream=True,
             timeout=300
         ) as resp:
