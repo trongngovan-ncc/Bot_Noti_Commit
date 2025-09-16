@@ -1,23 +1,24 @@
-# api/main.py
+# llm_service/app.py
 import os
 import json
 import requests
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import uvicorn
-from prompt import BASE_PROMPT_CHAIN_OF_THOUGHT
+from prompt import BASE_PROMPT_CHAIN_OF_THOUGHT, SHORTER_PROMPT
 from dotenv import load_dotenv
+import time  
+import logging
 load_dotenv()
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-from google import genai
-
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 app = FastAPI()
 
 class DiffRequest(BaseModel):
     diff: str
-    
+
+
 @app.post("/llm-review")
 async def llm_review(req: DiffRequest):
     diff = req.diff
@@ -25,20 +26,18 @@ async def llm_review(req: DiffRequest):
         raise HTTPException(status_code=400, detail="Missing diff")
 
     try:
+        prompt = f"""{SHORTER_PROMPT}
+Diff: 
+{diff}
+"""
+
+        start_time = time.time()
         with requests.post(
-        "http://localhost:11434/api/chat",
-        json={
-            "model": "mygpt:latest",
-            "messages": [
-                {
-                    "role": "user",
-                    "content": f"Dưới đây là Git diff, hãy review:\n\n```diff\n{diff}\n```"
-                }
-            ]
-        },
-        stream=True,
-        timeout=300
-            ) as resp:
+            "http://localhost:11434/api/generate",
+            json={"model": "gemma3:4b-it-qat", "prompt": prompt},
+            stream=True,
+            timeout=300
+        ) as resp:
             if resp.status_code != 200:
                 return {"error": f"Ollama error: {resp.text}", "status_code": resp.status_code}
 
@@ -48,14 +47,18 @@ async def llm_review(req: DiffRequest):
                     continue
                 try:
                     data = json.loads(line.decode("utf-8"))
-                    review += data.get("message", {}).get("content", "")
+                    review += data.get("response", "")
                 except Exception:
                     continue
+        end_time = time.time()
+        response_time = end_time - start_time
+        logging.info(f"Thời gian phản hồi của mô hình: {response_time:.2f}s")
+
 
         return {"review": review.strip()}
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+        return {"error": str(e)}
 
 
 if __name__ == "__main__":
