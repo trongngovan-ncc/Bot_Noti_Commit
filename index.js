@@ -4,7 +4,11 @@ const { MezonClient } = require('mezon-sdk');
 const registerGithubWebhook = require('./api/githubWebhook');
 const registerReviewApi = require('./api/review');
 const registerHealthApi = require('./api/health');
+const handleIntro = require("./commands/intro");
 const handleCreateWebhook = require('./commands/created_webhook');
+const handleCreateGitHook = require('./commands/created_githook');
+const handleIntroGitHook = require('./commands/intro_githook');
+const handleIntroWebhook = require('./commands/intro_webhook');
 const PORT = process.env.PORT || 8000;
 const APP_TOKEN = process.env.APPLICATION_TOKEN;
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
@@ -13,7 +17,7 @@ const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
 
 
 
-const handleIntro = require("./commands/intro_noticode");
+
 
 
 (async () => {
@@ -24,9 +28,7 @@ const handleIntro = require("./commands/intro_noticode");
   client.onChannelMessage(async (event) => {
     const text = event?.content?.t?.toLowerCase();
     if (!text) return;
-    if (text.startsWith("*intro_noticode")) {
-      return handleIntro(client, event);
-    }
+   
     if (text.startsWith("*mapping_repo_channel")) {
       return handleMapping(client, event);
     }
@@ -35,13 +37,30 @@ const handleIntro = require("./commands/intro_noticode");
       return handleCreateWebhook(client,event);
     }
 
+    if(text.startsWith("*create_githook")){
+      return handleCreateGitHook(client,event);
+    }
+
+    if(text.startsWith("*intro_webhook")){
+      return handleIntroWebhook(client,event);
+    }
+
+    if(text.startsWith("*intro_githook")){
+      return handleIntroGitHook(client,event);
+    }
+
+    if (text.startsWith("*intro")) {
+      return handleIntro(client, event);
+    }
+
 
   });
 
   // API logic
   const app = express();
-  app.use(express.json());
   registerGithubWebhook(app, client, { WEBHOOK_SECRET });
+  // Only use express.json for /review
+  app.use('/review', express.json());
   registerReviewApi(app, client);
   registerHealthApi(app);
   app.listen(PORT, () => {

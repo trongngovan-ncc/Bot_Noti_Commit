@@ -1,17 +1,16 @@
 const axios = require("axios");
 
-module.exports = async function handleNotificationGit(client, result, channelId) {
+module.exports = async function handleNotificationGit(client, result, channelId, additionalInfo = {}) {
   try {
      
-    console.log("Result to review:", result);
+    const { repoLink, userName, userEmail } = additionalInfo;
 
     const llmResponse = await axios.post(
       "http://172.16.220.214:8001/llm-review",
-      { diff: result },
+      { diff: result, repoLink, userName, userEmail },
       { headers: { "Content-Type": "application/json" } }
     );
 
-    
     const reviewResult = llmResponse.data; 
     console.log("LLM Review Result:", reviewResult);
 
@@ -26,14 +25,22 @@ module.exports = async function handleNotificationGit(client, result, channelId)
     } else {
       message = JSON.stringify(reviewResult);
     }
+    let infoHeader = "";
+    let repoStart = 0, repoEnd = 0;
+    infoHeader += `📦 Repo: ${repoLink}\n`;
+    repoStart = infoHeader.indexOf(repoLink);
+    repoEnd = repoStart + repoLink.length;
+    if (userName && userEmail) infoHeader += `👤 User: ${userName} || ✉️ Email: ${userEmail}\n`;
+    if (infoHeader) message = infoHeader + message;
 
-    await channel.send({ t: message ,
-      mk: [
-          { type: 'pre', s: 0 , e: message.length }
-      ]
-    });
-  } catch (err) {
-    console.error(err);
-  }
+    const mk = [
+      { type: 'lk', s: repoStart, e: repoEnd, url: repoLink },
+      { type: 'pre', s: infoHeader.length, e: message.length }
+    ];
+
+    await channel.send({ t: message , mk });
+    } catch (err) {
+      console.error(err);
+    }
 }
 
