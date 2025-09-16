@@ -40,6 +40,7 @@ const handleIntro = require("./commands/intro_noticode");
 
   // API logic
   const app = express();
+  app.use(express.json());
   registerGithubWebhook(app, client, { WEBHOOK_SECRET });
   registerReviewApi(app, client);
   registerHealthApi(app);
