@@ -3,18 +3,17 @@ const express = require('express');
 const { MezonClient } = require('mezon-sdk');
 const registerGithubWebhook = require('./api/githubWebhook');
 const registerReviewApi = require('./api/review');
+const registerJiraWebhook = require('./api/jiraWebhook');
 const registerHealthApi = require('./api/health');
 const handleIntro = require("./commands/intro");
 const handleCreateWebhook = require('./commands/created_webhook');
 const handleCreateGitHook = require('./commands/created_githook');
 const handleIntroGitHook = require('./commands/intro_githook');
 const handleIntroWebhook = require('./commands/intro_webhook');
+const handleCreateJiraHook = require('./commands/created_jirahook');
 const PORT = process.env.PORT || 8000;
 const APP_TOKEN = process.env.APPLICATION_TOKEN;
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
-
-
-
 
 
 
@@ -53,6 +52,10 @@ const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
       return handleIntro(client, event);
     }
 
+    if(text.startsWith("*create_jirahook")){
+      return handleCreateJiraHook(client,event);
+    }
+
 
   });
 
@@ -62,6 +65,7 @@ const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
   // Only use express.json for /review
   app.use('/review', express.json());
   registerReviewApi(app, client);
+  registerJiraWebhook(app, client);
   registerHealthApi(app);
   app.listen(PORT, () => {
     console.log(`🚀 Bot listening on port ${PORT}`);
