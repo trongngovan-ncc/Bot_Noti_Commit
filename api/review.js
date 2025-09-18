@@ -9,6 +9,7 @@ function extractRepoFromLink(repoLink) {
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const handleNotificationGit = require('../commands/noti_git');
+const handleNotificationGit_Gemini = require('../commands/noti_git_gemini');
 
 function verifyWebhookToken(token, secret) {
   if (!token) return null;
@@ -46,8 +47,12 @@ module.exports = function registerReviewApi(app, client) {
     
       res.json({ message: 'Diff received! Review will be sent to channel soon.' });
       console.log("userInfo", userInfo);
-   
-      handleNotificationGit(client, diff, payloadToken.channel_id, { repoLink, ...userInfo });
+
+      if(process.env.USE_MODEL=='gemini') {
+        handleNotificationGit_Gemini(client, diff, payloadToken.channel_id, { repoLink, ...userInfo });
+      }else{
+        handleNotificationGit(client, diff, payloadToken.channel_id, { repoLink, ...userInfo });
+      }
     } catch (err) {
       res.status(500).json({ error: err.message || 'internal error' });
     }
