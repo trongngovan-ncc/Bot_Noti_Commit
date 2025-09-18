@@ -6,7 +6,7 @@ module.exports = async function handleNotificationGit(client, result, channelId,
     const { repoLink, userName, userEmail } = additionalInfo;
 
     const llmResponse = await axios.post(
-      "http://172.16.220.214:8001/llm-review",
+      "https://liz-subumbellated-rico.ngrok-free.app/llm-review",
       { diff: result, repoLink, userName, userEmail },
       { headers: { "Content-Type": "application/json" } }
     );
