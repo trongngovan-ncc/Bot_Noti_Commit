@@ -10,6 +10,7 @@ const handleCreateWebhook = require('./commands/created_webhook');
 const handleCreateGitHook = require('./commands/created_githook');
 const handleIntroGitHook = require('./commands/intro_githook');
 const handleIntroWebhook = require('./commands/intro_webhook');
+const handleIntroJiraHook = require('./commands/intro_jirahook');
 const handleCreateJiraHook = require('./commands/created_jirahook');
 const PORT = process.env.PORT || 8000;
 const APP_TOKEN = process.env.APPLICATION_TOKEN;
@@ -44,6 +45,10 @@ const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
 
     if(text.startsWith("*intro_githook")){
       return handleIntroGitHook(client,event);
+    }
+
+    if(text.startsWith("*intro_jirahook")){
+      return handleIntroJiraHook(client,event);
     }
 
     if (text.startsWith("*intro")) {

@@ -7,6 +7,7 @@ module.exports = async function handleIntro(client, event) {
 `🤖 Xin chào! Tôi là bot hỗ trợ thông báo và review code cho các dự án trên các nền tảng Git/GitHub/Jira và thông báo tới Mezon.Các lệnh bạn có thể sử dụng:\n
 - 📝 *intro_githook: Hướng dẫn tích hợp git pre-commit gửi diff lên bot.
 - 📝 *intro_webhook: Hướng dẫn cấu hình webhook GitHub.
+- 📝 *intro_jirahook: Hướng dẫn cấu hình webhook Jira.
 - 🛡️ *create_webhook <usergithub/reponame>: Tạo URL webhook bảo mật cho repo với token.
 - 🛡️ *create_githook <usergithub/reponame>: Tạo API bảo mật cho git pre-commit với token.
 - 🛡️ *create_jirahook : Tạo API bảo mật cho Jira với token.
