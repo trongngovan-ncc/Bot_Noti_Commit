@@ -17,8 +17,6 @@ const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
 
 
 
-
-
 (async () => {
   const client = new MezonClient(APP_TOKEN);
   await client.login();

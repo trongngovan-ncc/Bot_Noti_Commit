@@ -46,8 +46,8 @@ module.exports = function registerReviewApi(app, client) {
     
       res.json({ message: 'Diff received! Review will be sent to channel soon.' });
       console.log("userInfo", userInfo);
-   
       handleNotificationGit(client, diff, payloadToken.channel_id, { repoLink, ...userInfo });
+      
     } catch (err) {
       res.status(500).json({ error: err.message || 'internal error' });
     }
