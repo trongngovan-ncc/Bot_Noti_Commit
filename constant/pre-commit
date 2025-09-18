@@ -1,0 +1,23 @@
+#!/bin/sh
+
+DIFF=$(git diff --cached | base64 -w 0)
+
+if [ -z "$DIFF" ]; then
+  exit 0
+fi
+
+REMOTE_URL=$(git config --get remote.origin.url)
+REPO_LINK=$(echo "$REMOTE_URL" | sed -E 's#git@([^:]+):#https://\1/#; s#\.git$##')
+
+GIT_NAME=$(git config user.name)
+GIT_EMAIL=$(git config user.email)
+
+USER_INFO=$(printf '{"userName":"%s","userEmail":"%s"}' "$GIT_NAME" "$GIT_EMAIL" | base64 -w 0)
+
+RESPONSE=$(curl -s -X POST <API_token> \
+  -H "Content-Type: application/json; charset=utf-8" \
+  -d "{\"diff_base64\": \"$DIFF\", \"repoLink\": \"$REPO_LINK\", \"userInfo_base64\": \"$USER_INFO\"}")
+
+echo "Service response: $RESPONSE"
+
+exit 0

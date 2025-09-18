@@ -21,7 +21,7 @@ $ yarn
 $ npm install
 ```
 
-Tạo file `.env`  điền các biến môi trường:
+Tạo file `.env`  điền các biến môi trường:+
 - `APPLICATION_TOKEN`: Token bot từ ứng dụng Mezon
 - `WEBHOOK_SECRET`, `GITHOOK_SECRET`, `JIRA_SECRET`: Secret cho các API bảo mật
 - `IP_HOST`: Địa chỉ public của server bot (dùng cho webhook)
@@ -78,6 +78,40 @@ $ npm start
   ```
 
 Sau khi tạo, copy URL trả về và cấu hình vào Git/GitHub/Jira tương ứng.
+
+## Hướng dẫn deploy bot lên Render.com
+
+1. **Đẩy code lên GitHub**
+   - Đảm bảo toàn bộ source code đã được push lên một repository GitHub riêng tư hoặc công khai.
+
+2. **Tạo tài khoản và kết nối Render với GitHub**
+   - Truy cập https://dashboard.render.com/ và đăng ký/đăng nhập.
+   - Chọn "New +" > "Web Service".
+   - Kết nối tài khoản GitHub, chọn repo chứa bot.
+
+3. **Thiết lập dịch vụ**
+   - Environment: Node
+   - Build Command: `yarn` hoặc `npm install`
+   - Start Command: `yarn start` hoặc `npm start`
+   - Region: Chọn Singapore hoặc US/EU tùy vị trí user.
+
+4. **Cấu hình biến môi trường (Environment Variables)**
+   - APPLICATION_TOKEN: Token ứng dụng Mezon
+   - WEBHOOK_SECRET, GITHOOK_SECRET, JIRA_SECRET: Secret cho các API bảo mật
+   - IP_HOST: URL public của Render (sẽ có sau khi deploy lần đầu, cần sửa lại cho đúng)
+   - URL_IMAGE: (nếu dùng hình hướng dẫn webhook)
+
+5. **Deploy lần đầu**
+   - Nhấn "Create Web Service" để Render tự động build và chạy bot.
+   - Sau khi deploy xong, lấy public URL (ví dụ: `https://bot-noti-commit.onrender.com`) để cấu hình webhook GitHub/Jira.
+   - Nếu cần, cập nhật lại biến IP_HOST = public URL này rồi "Deploy latest commit" lại lần nữa.
+
+6. **Cấu hình webhook trên GitHub/Jira**
+   - Dùng các lệnh tạo webhook như hướng dẫn ở trên, copy URL trả về và dán vào phần cấu hình webhook của GitHub/Jira.
+
+> **Lưu ý:**
+> - Render có thể sleep app nếu lâu không có request (bản free), hãy kiểm tra lại nếu thấy bot không phản hồi.
+> - Có thể dùng custom domain nếu muốn.
 
 ## Bảo mật
 - Mỗi webhook/API đều có token JWT, chỉ channel và repo , project được cấp phép mới nhận được notification.
