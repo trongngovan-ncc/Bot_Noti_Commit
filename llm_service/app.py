@@ -6,7 +6,6 @@ from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 import uvicorn
 from prompt import UPDATE_PROMPT
-import jwt 
 from dotenv import load_dotenv
 import time 
 from verify import verify_token 
