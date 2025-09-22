@@ -18,10 +18,15 @@ def fetch_public_key():
         response = requests.get(PUBLIC_KEY_URL, timeout=5)
         response.raise_for_status()
         CACHE["public_key"] = response.text.strip()
-        logging.info("Public key đã được cập nhật")
+        logging.info("Public key đã được cập nhật từ URL")
     except Exception as e:
         logging.error(f"Update public key thất bại: {e}")
-
+        env_public_key = os.getenv("PUBLIC_KEY")
+        if env_public_key:
+            CACHE["public_key"] = env_public_key.strip()
+            logging.info("Public key đã được lấy từ biến môi trường")
+        else:
+            logging.error("Không tìm thấy public key trong biến môi trường")
 
 def schedule_key_update(interval_seconds=86400):
     def job():
