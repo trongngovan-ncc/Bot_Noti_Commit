@@ -1,24 +1,27 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const fs = require('fs');
+const path = require('path');
+const PUBLIC_KEY = fs.readFileSync(path.join(__dirname, '../keys/public.pem'));
 const handleNotificationJira = require('../commands/noti_jira');
 
 
 
-function verifyJirahookToken(token, secret) {
+function verifyJirahookToken(token) {
   if (!token) return null;
   try {
-    return jwt.verify(token, secret);
+    return jwt.verify(token, PUBLIC_KEY, { algorithms: ['RS256'] });
   } catch {
     return null;
   }
 }
 
 module.exports = function registerJiraWebhook(app, client) {
-  const  JIRA_SECRET  = process.env.JIRA_SECRET;
+  // const  JIRA_SECRET  = process.env.JIRA_SECRET;
   app.post('/jira/webhook', express.json(), async (req, res) => {
     try {
       const token = req.query.token;
-      const payloadToken = verifyJirahookToken(token, JIRA_SECRET);
+  const payloadToken = verifyJirahookToken(token);
       if (!payloadToken) {
         return res.status(401).send('Invalid or missing token');
       }

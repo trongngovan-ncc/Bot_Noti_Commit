@@ -1,5 +1,8 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const fs = require('fs');
+const path = require('path');
+const PUBLIC_KEY = fs.readFileSync(path.join(__dirname, '../keys/public.pem'));
 const handleNotificationGithub = require('../commands/noti_github');
 
 function formatMessage(event, payload) {
@@ -80,21 +83,21 @@ function formatMessage(event, payload) {
 
 
 // Xác thực bằng token JWT
-function verifyWebhookToken(token, secret) {
+function verifyWebhookToken(token) {
   if (!token) return null;
   try {
-    return jwt.verify(token, secret);
+    return jwt.verify(token, PUBLIC_KEY, { algorithms: ['RS256'] });
   } catch {
     return null;
   }
 }
 
 module.exports = function registerGithubWebhook(app, client, config) {
-  const { WEBHOOK_SECRET } = config;
+  // const { WEBHOOK_SECRET } = config;
   app.post('/github/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
     try {
       const token = req.query.token;
-      const payloadToken = verifyWebhookToken(token, WEBHOOK_SECRET);
+  const payloadToken = verifyWebhookToken(token);
       if (!payloadToken) {
         return res.status(401).send('Invalid or missing token');
       }
