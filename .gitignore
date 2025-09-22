@@ -3,5 +3,6 @@ node_modules
 # Mezon cache
 /mezon-cache
 doc_development.txt
+/keys
 
 

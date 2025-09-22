@@ -1,6 +1,6 @@
 // const axios = require("axios");
 
-// module.exports = async function handleNotificationGit(client, result, channelId, additionalInfo = {}) {
+// module.exports = async function handleNotificationGit(client, result, channelId, additionalInfo = {}, token) {
 //   try {
      
 //     const { repoLink, userName, userEmail } = additionalInfo;
@@ -8,7 +8,11 @@
 //     const llmResponse = await axios.post(
 //       "https://liz-subumbellated-rico.ngrok-free.app/llm-review",
 //       { diff: result, repoLink, userName, userEmail },
-//       { headers: { "Content-Type": "application/json" } }
+//       { headers: { 
+//         "Content-Type": "application/json",
+//         'Authorization': `Bearer ${token}`
+//        }
+//       }
 //     );
 
 //     const reviewResult = llmResponse.data; 
@@ -79,7 +83,7 @@ LƯU Ý:
 GIT DIFF CẦN REVIEW:
 {DIFF}`;
 
-module.exports = async function handleNotificationGit(client, result, channelId, additionalInfo = {}) {
+module.exports = async function handleNotificationGit(client, result, channelId, additionalInfo = {}, token) {
   try {
     const { repoLink, userName, userEmail } = additionalInfo;
     const geminiApiKey = process.env.GEMINI_API_KEY;

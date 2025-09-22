@@ -8,23 +8,26 @@ function extractRepoFromLink(repoLink) {
 
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const fs = require('fs');
+const path = require('path');
+const PUBLIC_KEY = fs.readFileSync(path.join(__dirname, '../keys/public.pem'));
 const handleNotificationGit = require('../commands/noti_git');
 
-function verifyWebhookToken(token, secret) {
+function verifyWebhookToken(token) {
   if (!token) return null;
   try {
-    return jwt.verify(token, secret);
+    return jwt.verify(token, PUBLIC_KEY, { algorithms: ['RS256'] });
   } catch {
     return null;
   }
 }
 
 module.exports = function registerReviewApi(app, client) {
-  const GITHOOK_SECRET  = process.env.GITHOOK_SECRET;
+  // const GITHOOK_SECRET  = process.env.GITHOOK_SECRET;
   app.post('/review', express.json(), async (req, res) => {
     try {
       const token = req.query.token || req.body.token;
-      const payloadToken = verifyWebhookToken(token, GITHOOK_SECRET );
+      const payloadToken = verifyWebhookToken(token);
       if (!payloadToken) {
         return res.status(401).json({ error: 'Invalid or missing token' });
       }
@@ -46,7 +49,7 @@ module.exports = function registerReviewApi(app, client) {
     
       res.json({ message: 'Diff received! Review will be sent to channel soon.' });
       console.log("userInfo", userInfo);
-      handleNotificationGit(client, diff, payloadToken.channel_id, { repoLink, ...userInfo });
+      handleNotificationGit(client, diff, payloadToken.channel_id, { repoLink, ...userInfo }, token);
       
     } catch (err) {
       res.status(500).json({ error: err.message || 'internal error' });

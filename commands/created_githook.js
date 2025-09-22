@@ -1,5 +1,8 @@
+
 const jwt = require('jsonwebtoken');
-const SECRET = process.env.GITHOOK_SECRET;
+const fs = require('fs');
+const path = require('path');
+const PRIVATE_KEY = fs.readFileSync(path.join(__dirname, '../keys/private.pem'));
 
 
 module.exports = async function handleCreateGitHook(client, event) {
@@ -15,7 +18,11 @@ module.exports = async function handleCreateGitHook(client, event) {
   const channelId = event.channel_id;
   const userId = event.sender_id;
 
-  const token = jwt.sign({ user_id: userId, channel_id: channelId, repo }, SECRET, { expiresIn: '7d' });
+  const token = jwt.sign(
+    { user_id: userId, channel_id: channelId, repo },
+    PRIVATE_KEY,
+    { algorithm: 'RS256', expiresIn: '7d' }
+  );
   const host = process.env.IP_HOST;
   const githookUrl = `${host}/review?token=${token}`;
   const msg = await channel.messages.fetch(event.message_id);

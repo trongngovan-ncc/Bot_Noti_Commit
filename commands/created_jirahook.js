@@ -1,5 +1,8 @@
+
 const jwt = require('jsonwebtoken');
-const SECRET = process.env.JIRA_SECRET;
+const fs = require('fs');
+const path = require('path');
+const PRIVATE_KEY = fs.readFileSync(path.join(__dirname, '../keys/private.pem'));
 
 
 module.exports = async function handleCreateJiraHook(client, event) {
@@ -8,7 +11,11 @@ module.exports = async function handleCreateJiraHook(client, event) {
   const channelId = event.channel_id;
   const userId = event.sender_id;
 
-  const token = jwt.sign({ user_id: userId, channel_id: channelId}, SECRET, { expiresIn: '7d' });
+  const token = jwt.sign(
+    { user_id: userId, channel_id: channelId },
+    PRIVATE_KEY,
+    { algorithm: 'RS256', expiresIn: '7d' }
+  );
   const host = process.env.IP_HOST;
   const jirahookUrl = `${host}/jira/webhook?token=${token}`;
   const info = `Link jirahook:\n${jirahookUrl}`;

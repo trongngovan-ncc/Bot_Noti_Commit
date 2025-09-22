@@ -5,6 +5,7 @@ const registerGithubWebhook = require('./api/githubWebhook');
 const registerReviewApi = require('./api/review');
 const registerJiraWebhook = require('./api/jiraWebhook');
 const registerHealthApi = require('./api/health');
+const registerPublicKeyApi = require('./api/publicKey');
 const handleIntro = require("./commands/intro");
 const handleCreateWebhook = require('./commands/created_webhook');
 const handleCreateGitHook = require('./commands/created_githook');
@@ -60,6 +61,7 @@ const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
     }
 
 
+
   });
 
   // API logic
@@ -69,6 +71,7 @@ const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
   app.use('/review', express.json());
   registerReviewApi(app, client);
   registerJiraWebhook(app, client);
+  registerPublicKeyApi(app);
   registerHealthApi(app);
   app.listen(PORT, () => {
     console.log(`🚀 Bot listening on port ${PORT}`);
