@@ -1,8 +1,6 @@
 
 const jwt = require('jsonwebtoken');
-const fs = require('fs');
-const path = require('path');
-const PRIVATE_KEY = fs.readFileSync(path.join(__dirname, '../keys/private.pem'));
+const PRIVATE_KEY = process.env.PRIVATE_KEY_PEM;
 
 
 module.exports = async function handleCreateWebhook(client, event) {

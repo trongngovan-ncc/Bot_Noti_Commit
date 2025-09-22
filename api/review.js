@@ -8,9 +8,7 @@ function extractRepoFromLink(repoLink) {
 
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const fs = require('fs');
-const path = require('path');
-const PUBLIC_KEY = fs.readFileSync(path.join(__dirname, '../keys/public.pem'));
+const PUBLIC_KEY = process.env.PUBLIC_KEY_PEM;
 const handleNotificationGit = require('../commands/noti_git');
 
 function verifyWebhookToken(token) {
