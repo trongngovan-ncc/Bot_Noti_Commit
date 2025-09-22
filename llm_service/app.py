@@ -28,6 +28,10 @@ app = FastAPI(lifespan=lifespan)
 class DiffRequest(BaseModel):
     diff: str
 
+@app.get("/health")
+async def health_check():
+    return {"ok": True}
+
 @app.post("/llm-review")
 async def llm_review(req: DiffRequest,
                      payload: dict = Depends(verify_token)):
