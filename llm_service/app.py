@@ -2,39 +2,50 @@
 import os
 import json
 import requests
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 import uvicorn
-from prompt import BASE_PROMPT_CHAIN_OF_THOUGHT, SHORTER_PROMPT
+from prompt import UPDATE_PROMPT
+import jwt 
 from dotenv import load_dotenv
-import time  
+import time 
+from verify import verify_token 
+from key_schedule import schedule_key_update, fetch_public_key, CACHE
+from contextlib import asynccontextmanager
 import logging
 load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    fetch_public_key()
+    if not CACHE.get('public_key'):
+        logging.error("Không tải được public key khi khởi động")
+        raise RuntimeError("Không tải được public key khi khởi động")
+    schedule_key_update(interval_seconds=86400)
+    yield
 
-app = FastAPI()
-
+app = FastAPI(lifespan=lifespan)
 class DiffRequest(BaseModel):
     diff: str
 
-
 @app.post("/llm-review")
-async def llm_review(req: DiffRequest):
+async def llm_review(req: DiffRequest,
+                     payload: dict = Depends(verify_token)):
     diff = req.diff
     if not diff:
         raise HTTPException(status_code=400, detail="Missing diff")
 
     try:
-        prompt = f"""{SHORTER_PROMPT}
+        prompt = f"""{UPDATE_PROMPT}
 Diff: 
 {diff}
 """
 
         start_time = time.time()
         with requests.post(
-            "http://localhost:11434/api/generate",
-            json={"model": "gemma3:12b-it-qat", "prompt": prompt},
+            os.getenv("OLLAMA_URL"),
+            json={"model": os.getenv("MODEL_NAME"), "prompt": prompt},
             stream=True,
             timeout=300
         ) as resp:
@@ -54,11 +65,10 @@ Diff:
         response_time = end_time - start_time
         logging.info(f"Thời gian phản hồi của mô hình: {response_time:.2f}s")
 
-
         return {"review": review.strip()}
 
     except Exception as e:
-        return {"error": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 if __name__ == "__main__":
