@@ -28,5 +28,6 @@ def verify_token(authorization: str = Header(...)):
         return payload
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token đã hết hạn")
-    except jwt.InvalidTokenError:
+    except jwt.InvalidTokenError as e:
+        logging.error(f"Token không hợp lệ: {str(e)}")
         raise HTTPException(status_code=401, detail="Token không hợp lệ")
