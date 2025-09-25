@@ -28,7 +28,7 @@ app = FastAPI(lifespan=lifespan)
 class DiffRequest(BaseModel):
     diff: str
 
-@app.get("/health")
+@app.get("/health", include_in_schema=False)
 async def health_check():
     return {"ok": True}
 
