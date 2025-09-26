@@ -51,7 +51,7 @@ Diff:
             os.getenv("OLLAMA_URL"),
             json={"model": os.getenv("MODEL_NAME"), "prompt": prompt},
             stream=True,
-            timeout=300
+            timeout=600
         ) as resp:
             if resp.status_code != 200:
                 return {"error": f"Ollama error: {resp.text}", "status_code": resp.status_code}
