@@ -49,7 +49,7 @@ Diff:
         start_time = time.time()
         with requests.post(
             os.getenv("OLLAMA_URL"),
-            json={"model": "qwen3:1.7b", "prompt": prompt},
+            json={"model": "gemma3:4b-it-qat", "prompt": prompt},
             stream=True,
             timeout=600
         ) as resp:
