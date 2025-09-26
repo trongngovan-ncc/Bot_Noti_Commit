@@ -48,8 +48,8 @@ Diff:
 
         start_time = time.time()
         with requests.post(
-            "http://172.16.254.254:11434/api/generate",
-            json={"model": os.getenv("MODEL_NAME"), "prompt": prompt},
+            os.getenv("OLLAMA_URL"),
+            json={"model": "qwen3:1.7b", "prompt": prompt},
             stream=True,
             timeout=600
         ) as resp:
