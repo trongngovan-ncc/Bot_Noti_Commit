@@ -51,7 +51,7 @@ async def llm_review(req: DiffRequest,
 
         start_time = time.time()
         with requests.post(
-            "https://liz-subumbellated-rico.ngrok-free.app/api/generate",
+            os.getenv("OLLAMA_URL"),
             json={"model": "gemma3:4b-it-qat", "prompt": prompt},
             stream=True,
             timeout=600
