@@ -5,7 +5,6 @@ import requests
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 import uvicorn
-from prompt import UPDATE_PROMPT
 from dotenv import load_dotenv
 import time 
 from verify import verify_token 
@@ -26,6 +25,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 class DiffRequest(BaseModel):
+    prompt: str
     diff: str
 
 @app.get("/health", include_in_schema=False)
@@ -36,19 +36,20 @@ async def health_check():
 @app.post("/llm-review")
 async def llm_review(req: DiffRequest,
                      payload: dict = Depends(verify_token)):
+    prompt = req.prompt
     diff = req.diff
     if not diff:
         raise HTTPException(status_code=400, detail="Missing diff")
 
     try:
-        prompt = f"""{UPDATE_PROMPT}
-Diff: 
-{diff}
-"""
+#         prompt = f"""{UPDATE_PROMPT}
+# Diff: 
+# {diff}
+# """
 
         start_time = time.time()
         with requests.post(
-            os.getenv("OLLAMA_URL"),
+            "https://liz-subumbellated-rico.ngrok-free.app/api/generate",
             json={"model": "gemma3:4b-it-qat", "prompt": prompt},
             stream=True,
             timeout=600
