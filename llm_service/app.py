@@ -37,8 +37,8 @@ async def health_check():
 @app.post("/llm-review")
 async def llm_review(req: DiffRequest,
                      payload: dict = Depends(verify_token)):
-    prompt = req.prompt if req.prompt else UPDATE_PROMPT
-    diff = req.diff
+    prompt = req.get("prompt") if req.prompt else UPDATE_PROMPT
+    diff = req.get("diff")
     if not diff:
         raise HTTPException(status_code=400, detail="Missing diff")
 
