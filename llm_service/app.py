@@ -4,6 +4,7 @@ import json
 import requests
 from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
+from typing import Optional
 import uvicorn
 from dotenv import load_dotenv
 import time 
@@ -26,7 +27,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 class DiffRequest(BaseModel):
-    prompt: str
+    prompt: Optional[str] = None
     diff: str
 
 @app.get("/health", include_in_schema=False)
@@ -37,8 +38,8 @@ async def health_check():
 @app.post("/llm-review")
 async def llm_review(req: DiffRequest,
                      payload: dict = Depends(verify_token)):
-    prompt = req.get("prompt") if req.prompt else UPDATE_PROMPT
-    diff = req.get("diff")
+    prompt = req.prompt if req.prompt else UPDATE_PROMPT
+    diff = req.diff
     if not diff:
         raise HTTPException(status_code=400, detail="Missing diff")
 
