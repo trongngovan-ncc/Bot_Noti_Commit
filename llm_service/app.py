@@ -7,6 +7,7 @@ from pydantic import BaseModel
 import uvicorn
 from dotenv import load_dotenv
 import time 
+from prompt import UPDATE_PROMPT
 from verify import verify_token 
 from key_schedule import schedule_key_update, fetch_public_key, CACHE
 from contextlib import asynccontextmanager
@@ -36,7 +37,7 @@ async def health_check():
 @app.post("/llm-review")
 async def llm_review(req: DiffRequest,
                      payload: dict = Depends(verify_token)):
-    prompt = req.prompt
+    prompt = req.prompt if req.prompt else UPDATE_PROMPT
     diff = req.diff
     if not diff:
         raise HTTPException(status_code=400, detail="Missing diff")
