@@ -58,7 +58,7 @@ async def llm_review(req: DiffRequest,
         start_time = time.time()
         with requests.post(
             os.getenv("OLLAMA_URL"),
-            json={"model": "gemma3:4b-it-qat", "prompt": full_prompt},
+            json={"model": os.getenv("MODEL_NAME"), "prompt": full_prompt},
             stream=True,
             timeout=600
         ) as resp:
