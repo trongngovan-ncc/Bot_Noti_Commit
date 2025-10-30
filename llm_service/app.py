@@ -15,7 +15,7 @@ from contextlib import asynccontextmanager
 import logging
 load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL")
+OLLAMA_MODEL = os.getenv("MODEL_NAME")
 
 
 @asynccontextmanager
@@ -64,7 +64,7 @@ async def llm_review(req: DiffRequest,
             timeout=600
         ) as resp:
             if resp.status_code != 200:
-                error_message = f"Ollama service returned status {resp.status_code}: {resp.text}"
+                error_message = f"Ollama service trả về status {resp.status_code}: {resp.text}"
                 logging.error(error_message)
                 raise HTTPException(status_code=502, detail=error_message) 
 
@@ -83,7 +83,11 @@ async def llm_review(req: DiffRequest,
 
         return {"review": review.strip()}
 
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Không thể kết nối đến Ollama service: {e}")
+        raise HTTPException(status_code=503, detail=f"Không thể kết nối đến Ollama service: {os.getenv('OLLAMA_URL')}")
     except Exception as e:
+        logging.error(f"Lỗi không xác định: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
