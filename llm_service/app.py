@@ -15,11 +15,7 @@ from contextlib import asynccontextmanager
 import logging
 load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-from google import genai
-from google.genai.types import HttpOptions
 
-client = genai.Client(api_key=os.getenv("GEMINI_KEY"),
-                      http_options=HttpOptions(api_version='v1'))
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -40,34 +36,6 @@ class DiffRequest(BaseModel):
 async def health_check():
     return {"ok": True}
 
-@app.post("/gemini-review")
-async def gemini_review(req: DiffRequest,
-                        payload: dict = Depends(verify_token)):
-    
-    prompt = req.prompt if req.prompt else UPDATE_PROMPT
-    diff = req.diff
-    if not diff:
-        raise HTTPException(status_code=400, detail="Missing diff")
-    try:
-        full_prompt = f"""{prompt}
-
-        Git Diff:
-        {diff}
-        """
-        model_id = os.getenv("GEMINI_MODEL_NAME")
-        print("Using Gemini model:", model_id)
-        response = client.models.generate_content(
-            model=model_id,
-            contents= full_prompt
-        )
-
-        review_text = response.text if hasattr(response, 'text') else str(response)
-        if not review_text:
-            raise HTTPException(status_code=500, detail="Empty response from Gemini model")
-        return {"review": review_text.strip()}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
 @app.post("/llm-review")
 async def llm_review(req: DiffRequest,
                      payload: dict = Depends(verify_token)):
