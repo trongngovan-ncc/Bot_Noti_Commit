@@ -15,6 +15,7 @@ from contextlib import asynccontextmanager
 import logging
 load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL")
 
 
 @asynccontextmanager
@@ -58,7 +59,7 @@ async def llm_review(req: DiffRequest,
         start_time = time.time()
         with requests.post(
             os.getenv("OLLAMA_URL"),
-            json={"model": os.getenv("MODEL_NAME"), "prompt": full_prompt},
+            json={"model": OLLAMA_MODEL, "prompt": full_prompt},
             stream=True,
             timeout=600
         ) as resp:

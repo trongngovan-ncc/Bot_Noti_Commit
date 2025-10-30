@@ -20,7 +20,7 @@ def fetch_public_key():
         CACHE["public_key"] = response.text.strip()
         logging.info("Public key đã được cập nhật từ URL")
     except Exception as e:
-        logging.error(f"Update public key thất bại: {e}")
+        logging.warning(f"Không thể lấy public key từ URL: {e}. Thử lấy từ biến môi trường.")
         env_public_key = os.getenv("PUBLIC_KEY")
         if env_public_key:
             CACHE["public_key"] = env_public_key.replace("\\n", "\n")
