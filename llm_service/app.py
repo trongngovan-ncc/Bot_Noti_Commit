@@ -64,7 +64,9 @@ async def llm_review(req: DiffRequest,
             timeout=600
         ) as resp:
             if resp.status_code != 200:
-                return {"error": f"Ollama error: {resp.text}", "status_code": resp.status_code}
+                error_message = f"Ollama service returned status {resp.status_code}: {resp.text}"
+                logging.error(error_message)
+                raise HTTPException(status_code=502, detail=error_message) 
 
             review = ""
             for line in resp.iter_lines():
