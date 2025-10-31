@@ -58,7 +58,7 @@ async def llm_review(req: DiffRequest,
 
         start_time = time.time()
         with requests.post(
-            os.getenv("OLLAMA_URL"),
+            os.getenv("OLLAMA_URL_LOCAL"),
             json={"model": OLLAMA_MODEL, "prompt": full_prompt},
             stream=True,
             timeout=600
