@@ -43,13 +43,9 @@ async def llm_review(req: DiffRequest,
     prompt = req.prompt if req.prompt else UPDATE_PROMPT
     diff = req.diff
     if not diff:
-        raise HTTPException(status_code=400, detail="Missing diff")
+        raise HTTPException(status_code=400, detail="Thiếu diff")
 
     try:
-#         prompt = f"""{UPDATE_PROMPT}
-# Diff: 
-# {diff}
-# """
         full_prompt = f"""{prompt}
 
         Git Diff:
