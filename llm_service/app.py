@@ -75,7 +75,7 @@ async def llm_review(req: DiffRequest,
                     continue
         end_time = time.time()
         response_time = end_time - start_time
-        logging.info(f"Thời gian phản hồi của mô hình: {response_time:.2f}s")
+        logging.info(f"Thời gian phản hồi của mô hình {OLLAMA_MODEL}: {response_time:.2f}s")
 
         return {"review": review.strip()}
 
