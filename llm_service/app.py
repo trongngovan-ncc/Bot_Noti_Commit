@@ -56,7 +56,7 @@ async def llm_review(req: DiffRequest,
         with requests.post(
             os.getenv("OLLAMA_URL"),
             json={"model": OLLAMA_MODEL, "prompt": full_prompt},
-            stream=True,
+            stream=False,
             timeout=600
         ) as resp:
             if resp.status_code != 200:
