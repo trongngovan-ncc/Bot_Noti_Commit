@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chọn Project Jira</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f7f7f7; }
+    .container { max-width: 500px; margin: 40px auto; background: #fff; padding: 32px; border-radius: 8px; box-shadow: 0 2px 8px #0001; }
+    h2 { margin-bottom: 24px; }
+    select, button { width: 100%; padding: 10px; margin-top: 12px; font-size: 16px; }
+    button { background: #0052cc; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #0065ff; }
+    .msg { margin-top: 20px; color: green; }
+    .error { margin-top: 20px; color: red; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Chọn Project Jira để tạo webhook</h2>
+    <form id="projectForm">
+      <select id="projectSelect" name="projectKey">
+        {{PROJECT_OPTIONS}}
+      </select>
+      <button type="submit">Tạo webhook</button>
+    </form>
+    <div id="result" class="msg"></div>
+    <div id="error" class="error"></div>
+  </div>
+  <script>
+    const accessToken = "{{ACCESS_TOKEN}}";
+    const cloudId = "{{CLOUD_ID}}";
+    document.getElementById('projectForm').onsubmit = async function(e) {
+      e.preventDefault();
+      const key = document.getElementById('projectSelect').value;
+      document.getElementById('result').innerText = '';
+      document.getElementById('error').innerText = '';
+      try {
+        const resp = await fetch(`https://api.atlassian.com/ex/jira/${cloudId}/rest/api/3/webhook`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            url: process.env.JIRA_OAUTH_WEBHOOK_URI,
+            webhooks: [
+              {
+                events: [
+                  'jira:issue_created',
+                  'jira:issue_updated'
+                ],
+                jqlFilter: `project = ${key}`
+              }
+            ]
+          })
+        });
+        if (resp.ok) {
+          document.getElementById('result').innerText = 'Đã tạo webhook thành công!';
+        } else {
+          const err = await resp.json();
+          document.getElementById('error').innerText = err.errorMessages ? err.errorMessages.join(', ') : 'Tạo webhook thất bại';
+        }
+      } catch (err) {
+        document.getElementById('error').innerText = 'Lỗi: ' + err.message;
+      }
+    }
+  </script>
+</body>
+</html>

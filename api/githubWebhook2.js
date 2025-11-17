@@ -1,7 +1,10 @@
 const express = require('express');
-const jwt = require('jsonwebtoken');
-const PUBLIC_KEY = process.env.PUBLIC_KEY_PEM;
+const crypto = require('crypto');
 const handleNotificationGithub = require('../commands/noti_github');
+const sqlite3 = require('sqlite3');
+const { open } = require('sqlite');
+const path = require('path');
+const dbPromise = open({ filename: path.join(__dirname, '../database/github.db'), driver: sqlite3.Database });
 
 function formatMessage(event, payload) {
   switch (event) {
@@ -79,37 +82,45 @@ function formatMessage(event, payload) {
   }
 }
 
-
-// Xác thực bằng token JWT
-function verifyWebhookToken(token) {
-  if (!token) return null;
-  try {
-    return jwt.verify(token, PUBLIC_KEY, { algorithms: ['RS256'] });
-  } catch {
-    return null;
-  }
+async function verifyWebhookSignature(payload, signature, secret) {
+  const sig = Buffer.from(signature || '', 'utf8');
+  const hmac = crypto.createHmac('sha256', secret);
+  const digest = Buffer.from('sha256=' + hmac.update(payload).digest('hex'), 'utf8');
+  return sig.length === digest.length && crypto.timingSafeEqual(digest, sig);
 }
 
-module.exports = function registerGithubWebhook(app, client, config) {
-  // const { WEBHOOK_SECRET } = config;
-  app.post('/github/webhook/v1', express.raw({ type: 'application/json' }), async (req, res) => {
+module.exports = async function registerGithubWebhook2(app, client) {
+  const db = await dbPromise;
+  app.post('/github/webhook/v2', express.raw({ type: 'application/json' }), async (req, res) => {
     try {
-      const token = req.query.token;
-      const payloadToken = verifyWebhookToken(token);
-      if (!payloadToken) {
-        return res.status(401).send('Invalid or missing token');
-      }
-      // Optionally: idempotency logic (if needed)
+      const signature = req.headers['x-hub-signature-256'];
       let payload = {};
-      try {
-        payload = JSON.parse(req.body.toString('utf8'));
-      } catch (e) {
-        console.warn('Failed to parse webhook payload JSON:', e.message);
+      if (Buffer.isBuffer(req.body)) {
+        try {
+          payload = JSON.parse(req.body.toString('utf8'));
+        } catch (e) {
+          console.warn('Failed to parse webhook payload JSON:', e.message);
+          return res.status(400).send('Invalid payload');
+        }
+      } else if (typeof req.body === 'object') {
+        payload = req.body;
+      } else {
+        console.warn('Unexpected payload type:', typeof req.body);
+        return res.status(400).send('Invalid payload type');
+      }
+      // Lấy secret từ DB theo repo
+      const repo = payload.repository?.full_name;
+      const webhook = await db.get('SELECT webhook_secret, channel_id FROM repo_webhooks WHERE repo = ?', [repo]);
+      if (!webhook) {
+        return res.status(404).send('Webhook config not found');
+      }
+      const rawBody = Buffer.isBuffer(req.body) ? req.body : Buffer.from(JSON.stringify(payload), 'utf8');
+      const isValid = await verifyWebhookSignature(rawBody, signature, webhook.webhook_secret);
+      if (!isValid) {
+        return res.status(401).send('Invalid signature');
       }
       const event = req.headers['x-github-event'] || 'unknown';
-      console.log(`Received GitHub event: ${event} (repo=${payload.repository?.full_name || 'unknown'})`);
-      const channelId = payloadToken.channel_id;
-      console.log("Using channel ID:", channelId);
+      const channelId = webhook.channel_id;
       const message = formatMessage(event, payload);
       await handleNotificationGithub(client, message, channelId);
       return res.status(200).json({ ok: true });
