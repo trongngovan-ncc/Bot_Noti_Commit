@@ -1,0 +1,7 @@
+Remove-Item -Recurse -Force node_modules
+Remove-Item -Force package-lock.json
+npm install
+npm install -g pkg
+
+pkg . --targets node18-win-x64 --output bot_noti_commit.exe
+
