@@ -1,4 +1,4 @@
-# Bot Noti Commit (Git + GitHub + Jira)
+# Bot Noti Commit (Git + GitHub )
 
 Bot Noti Commit là bot tích hợp cho hệ sinh thái Mezon, giúp tự động nhận thông báo và review code từ Git Local, Github, cũng như nhận notification từ Jira về các sự kiện quan trọng (issue, sprint, project, v.v.).
 
